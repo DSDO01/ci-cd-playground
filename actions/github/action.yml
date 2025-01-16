@@ -1,21 +1,21 @@
-name: "GitHub Scan Action"
-description: "Triggers a security scan process for GitHub repositories."
+name: "Trigger and Monitor Security Scan"
+description: "Triggers a scan process via API, monitors results, and posts comments on Pull Requests."
 inputs:
-  repo_token:
-    description: "GitHub token for authentication and API access."
-    required: true
   api_token:
-    description: "API token for Dedge."
+    description: "The API authentication token."
     required: true
   dedge_host_url:
-    description: "The host URL for the Dedge API."
+    description: "The host URL for the API."
     required: true
   asset_id:
-    description: "The asset ID to be scanned."
+    description: "Optional asset ID for the scan."
     required: false
+  github_token:
+    description: "GitHub token for posting comments."
+    required: true
 outputs:
   scan_status:
-    description: "The result of the scan (success or failure)."
+    description: "The final status of the scan."
 runs:
   using: "node20"
   main: "index.js"
