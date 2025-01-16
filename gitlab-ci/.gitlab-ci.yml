@@ -1,0 +1,7 @@
+stages:
+  - test
+
+example_job:
+  stage: test
+  script:
+    - bash script.sh

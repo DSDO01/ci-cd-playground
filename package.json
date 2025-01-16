@@ -1,0 +1,8 @@
+{
+    "name": "scan-action",
+    "version": "1.0.0",
+    "main": "actions/github/index.js",
+    "dependencies": {
+        "@actions/core": "^1.2.6"
+    }
+}
