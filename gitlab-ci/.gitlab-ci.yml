@@ -1,7 +1,16 @@
 stages:
-  - test
+  - scan
 
-example_job:
-  stage: test
+scan_job:
+  stage: scan
+  image: node:20
   script:
-    - bash script.sh
+    - npm install
+    - node actions/gitlab/index.js
+  variables:
+    API_TOKEN: $API_TOKEN
+    DEDGE_HOST_URL: $DEDGE_HOST_URL
+    ASSET_ID: $ASSET_ID
+  only:
+    - merge_requests
+    - main
