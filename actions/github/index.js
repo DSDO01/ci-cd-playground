@@ -2,59 +2,33 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
 
-async function run() {
+async function triggerScan(apiToken, dedgeHostUrl, scanPayload) {
     try {
-        const apiToken = core.getInput('api_token', { required: true });
-        const dedgeHostUrl = core.getInput('dedge_host_url', { required: true });
-        const assetId = core.getInput('asset_id');
-
-        const branch = process.env.GITHUB_REF.replace('refs/heads/', '');
-        const commit = process.env.GITHUB_SHA;
-        const provider = 'github';
-        const cloneUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}.git`;
-        const url = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
-        const repositoryName = process.env.GITHUB_REPOSITORY.split('/').pop();
-        const scmRepositoryId = process.env.GITHUB_REPOSITORY_ID;
-
-        // Create payload for scan
-        const scanPayload = {
-            branch,
-            commit,
-            provider,
-            clone_url: cloneUrl,
-            url,
-            repository_name: repositoryName,
-            scm_repository_id: scmRepositoryId,
-            asset_id: assetId
-        };
-
-        // Trigger Scan
-        const triggerResponse = await axios.post(`${dedgeHostUrl}/api/integrations/scan-process/start`, scanPayload, {
+        const response = await axios.post(`${dedgeHostUrl}/integrations/scan-process/start`, scanPayload, {
             headers: {
                 'X-API-Key': apiToken,
                 'Content-Type': 'application/json'
             }
         });
+        console.log(response.data);
+        return response.data.scan_id;
+    } catch (error) {
+        throw new Error(`Failed to trigger scan: ${error.response.data.error}`);
+    }
+}
 
-        const scanId = triggerResponse.data.scan_id;
-        core.exportVariable('SCAN_ID', scanId);
-
-        if (github.context.eventName === 'pull_request') {
-            const commentBody = "🚀 A security scan has been triggered for this Pull Request. Stay tuned for updates! 🔍";
-            await postComment(commentBody);
-        }
-
-        // Poll for Scan Results
+async function pollScanResults(apiToken, dedgeHostUrl, scanId) {
+    try {
         while (true) {
-            const pollResponse = await axios.get(`${dedgeHostUrl}/api/integrations/scan-process/${scanId}`, {
+            const response = await axios.get(`${dedgeHostUrl}/integrations/scan-process/${scanId}`, {
                 headers: {
                     'X-API-Key': apiToken
                 }
             });
 
-            const status = pollResponse.data.status;
-            const result = pollResponse.data.result;
-            const reportLink = pollResponse.data.report_link;
+            const status = response.data.status;
+            const result = response.data.result;
+            const reportLink = response.data.report_link;
 
             if (status === 'finished') {
                 let message;
@@ -66,17 +40,65 @@ async function run() {
                     message = "⚠️ Security scan finished, but the result is unknown.";
                 }
 
-                if (github.context.eventName === 'pull_request') {
-                    await postComment(message);
-                }
-
-                core.setOutput('scan_status', result);
-                break;
+                console.log(message);
+                return result;
             }
 
             console.log(`Scan status: ${status}`);
             await new Promise(resolve => setTimeout(resolve, 10000)); // Sleep for 10 seconds
         }
+    } catch (error) {
+        throw new Error(`Failed to poll scan results: ${error.message}`);
+    }
+}
+
+async function run() {
+    try {
+        const apiToken = core.getInput('API_TOKEN', { required: true });
+        const dedgeHostUrl = core.getInput('DEDGE_HOST_URL', { required: true });
+        const assetId = core.getInput('ASSET_ID');
+
+        const branch = process.env.GITHUB_REF.replace('refs/heads/', '');
+        const commit = process.env.GITHUB_SHA;
+        const provider = 'github';
+        const cloneUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}.git`;
+        const url = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
+        const repositoryName = process.env.GITHUB_REPOSITORY.split('/').pop();
+        const scmRepositoryId = parseInt(process.env.GITHUB_REPOSITORY_ID, 10);
+
+
+        const scanPayload = {
+            branch,
+            commit,
+            scm_provider: provider,
+            clone_url: cloneUrl,
+            url,
+            scm_repository_id: scmRepositoryId,
+            repository_name: repositoryName,
+            asset_id: assetId
+        };
+
+        let scanId;
+        try {
+            scanId = await triggerScan(apiToken, dedgeHostUrl, scanPayload);
+            core.exportVariable('SCAN_ID', scanId);
+        } catch (error) {
+            core.setFailed(`Failed to trigger scan: ${error.message}`);
+            return; // Exit the function if triggering the scan fails
+        }
+
+        if (github.context.eventName === 'pull_request') {
+            const commentBody = "🚀 A security scan has been triggered for this Pull Request. Stay tuned for updates! 🔍";
+            await postComment(commentBody);
+        }
+
+        try {
+            const scanStatus = await pollScanResults(apiToken, dedgeHostUrl, scanId);
+            core.setOutput('scan_status', scanStatus);
+        } catch (error) {
+            core.setFailed(`Failed to poll scan results: ${error.message}`);
+        }
+
     } catch (error) {
         core.setFailed(`Action failed with error: ${error.message}`);
     }

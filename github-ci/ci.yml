@@ -11,20 +11,21 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run GitHub Action
-      env:
-        API_TOKEN: ${{ secrets.API_TOKEN }}
-        DEDGE_HOST_URL: ${{ secrets.DEDGE_HOST_URL }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: node actions/github/index.js
+      - name: Run GitHub Action
+        uses:
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+          DEDGE_HOST_URL: ${{ secrets.DEDGE_HOST_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node actions/github/index.js
