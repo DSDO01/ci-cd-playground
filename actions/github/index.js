@@ -31,17 +31,8 @@ async function pollScanResults(apiToken, dedgeHostUrl, scanId) {
             const reportLink = response.data.report_link;
 
             if (status === 'finished') {
-                let message;
-                if (result === 'success') {
-                    message = `✅ Security scan completed successfully! View the detailed report [here](${reportLink}).`;
-                } else if (result === 'failure') {
-                    message = `❌ Security scan failed. Review the report for more details [here](${reportLink}).`;
-                } else {
-                    message = "⚠️ Security scan finished, but the result is unknown.";
-                }
-
-                console.log(message);
-                return result;
+                console.log(response.data);
+                return { result, reportLink };
             }
 
             console.log(`Scan status: ${status}`);
@@ -66,6 +57,7 @@ async function run() {
         const repositoryName = process.env.GITHUB_REPOSITORY.split('/').pop();
         const scmRepositoryId = parseInt(process.env.GITHUB_REPOSITORY_ID, 10);
 
+        const triggerScanSuccessMessage = "🚀 A security scan has been triggered for this Pull Request. Stay tuned for updates! 🔍";
 
         const scanPayload = {
             branch,
@@ -78,6 +70,8 @@ async function run() {
             asset_id: assetId
         };
 
+
+        console.log(JSON.stringify(scanPayload));
         let scanId;
         try {
             scanId = await triggerScan(apiToken, dedgeHostUrl, scanPayload);
@@ -87,17 +81,37 @@ async function run() {
             return; // Exit the function if triggering the scan fails
         }
 
+
+        displayFormattedMessage(triggerScanSuccessMessage);
         if (github.context.eventName === 'pull_request') {
-            const commentBody = "🚀 A security scan has been triggered for this Pull Request. Stay tuned for updates! 🔍";
-            await postComment(commentBody);
+            await postComment(triggerScanSuccessMessage);
         }
 
         try {
-            const scanStatus = await pollScanResults(apiToken, dedgeHostUrl, scanId);
+            const scanStatusData = await pollScanResults(apiToken, dedgeHostUrl, scanId);
+            const scanStatus = scanStatusData.result;
+            const reportLink = scanStatusData.reportLink;
             core.setOutput('scan_status', scanStatus);
+            core.setOutput('report_link', reportLink);
+
+            let message;
+            if (scanStatus === 'success') {
+                message = `✅ Security scan completed successfully! View the detailed report [here](${reportLink}).`;
+            } else if (scanStatus === 'failure') {
+                message = `❌ Security scan failed. Review the report for more details [here](${reportLink}).`;
+            } else {
+                message = "⚠️ Security scan finished, but the result is unknown.";
+            }
+
+            displayFormattedMessage(message);
+            if (github.context.eventName === 'pull_request') {
+                await postComment(message);
+            }
         } catch (error) {
             core.setFailed(`Failed to poll scan results: ${error.message}`);
         }
+
+
 
     } catch (error) {
         core.setFailed(`Action failed with error: ${error.message}`);
@@ -105,17 +119,28 @@ async function run() {
 }
 
 async function postComment(message) {
-    const token = core.getInput('github_token', { required: true });
-    const octokit = github.getOctokit(token);
-    const { owner, repo } = github.context.repo;
-    const issueNumber = github.context.payload.pull_request.number;
+    try {
+        const token = core.getInput('GITHUB_TOKEN', { required: true });
 
-    await octokit.rest.issues.createComment({
-        owner,
-        repo,
-        issue_number: issueNumber,
-        body: message
-    });
+        const octokit = github.getOctokit(token);
+        const { owner, repo } = github.context.repo;
+        const issueNumber = github.context.payload.pull_request.number;
+
+        await octokit.rest.issues.createComment({
+            owner,
+            repo,
+            issue_number: issueNumber,
+            body: message
+        });
+    } catch (error) {
+        console.error(`Failed to post comment: ${error.message}`);
+    }
 }
 
 run();
+
+function displayFormattedMessage(message) {
+    const messageLength = message.length + 4; // Add extra space for padding
+    const border = '-'.repeat(messageLength);
+    console.log(`${border}\n| ${message} |\n${border}`);
+}

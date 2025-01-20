@@ -1,31 +1,18 @@
-name: "Execute CI/CD Scan"
-on:
-  pull_request:
-    types: [opened, synchronize, closed]
-  push:
-    branches:
-      - main
+stages:
+  - scan
 
-jobs:
-  scan:
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run GitHub Action
-        uses:
-        env:
-          API_TOKEN: ${{ secrets.API_TOKEN }}
-          DEDGE_HOST_URL: ${{ secrets.DEDGE_HOST_URL }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node actions/github/index.js
+scan_job:
+  stage: scan
+  image: node:20
+  script:
+    - cd actions
+    - npm install
+    - node gitlab/index.js
+  variables:
+    API_TOKEN: dedge_pat_FMcG1zPlT_G_IGZiRTQwEsxXCLO_rVzQNAG-T-pYK9Q=
+    DEDGE_HOST_URL: https://api.demo.dedgesecurity.io
+    GITLAB_TOKEN: $GITLAB_TOKEN_COMMENT ## You must provide it, if you would like to comment on the pull-request.
+    ASSET_ID: ac433cef-b387-4142-9c99-4181b46d0b6b
+  only:
+    - merge_requests
+    - main
