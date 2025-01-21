@@ -5,12 +5,14 @@ scan_job:
   stage: scan
   image: node:20
   script:
+    - cd actions
     - npm install
-    - node actions/gitlab/index.js
+    - node gitlab/index.js
   variables:
-    API_TOKEN: $API_TOKEN
-    DEDGE_HOST_URL: $DEDGE_HOST_URL
-    ASSET_ID: $ASSET_ID
+    API_TOKEN: dedge_pat_FMcG1zPlT_G_IGZiRTQwEsxXCLO_rVzQNAG-T-pYK9Q=
+    DEDGE_HOST_URL: https://scanning.free.beeceptor.com
+    GITLAB_TOKEN: $GITLAB_TOKEN_COMMENT ## You must provide it, if you would like to comment on the pull-request.
+    ASSET_ID: ac433cef-b387-4142-9c99-4181b46d0b6b
   only:
     - merge_requests
     - main

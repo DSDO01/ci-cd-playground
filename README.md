@@ -28,7 +28,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm install
-      - uses: ./.github/actions
+      - uses: DSDO01/ci-cd-playground/actions/github@main
         with:
           API_TOKEN: ${{ secrets.API_TOKEN }}
           DEDGE_HOST_URL: ${{ vars.DEDGE_HOST_URL }}
