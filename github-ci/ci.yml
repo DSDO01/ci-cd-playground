@@ -1,18 +1,35 @@
-stages:
-  - scan
+name: "Execute CI/CD Scan"
+on:
+  pull_request:
+    types: [opened, synchronize, closed]
+  push:
+    branches:
+      - main
 
-scan_job:
-  stage: scan
-  image: node:20
-  script:
-    - cd actions
-    - npm install
-    - node gitlab/index.js
-  variables:
-    API_TOKEN: dedge_pat_FMcG1zPlT_G_IGZiRTQwEsxXCLO_rVzQNAG-T-pYK9Q=
-    DEDGE_HOST_URL: https://api.demo.dedgesecurity.io
-    GITLAB_TOKEN: $GITLAB_TOKEN_COMMENT ## You must provide it, if you would like to comment on the pull-request.
-    ASSET_ID: ac433cef-b387-4142-9c99-4181b46d0b6b
-  only:
-    - merge_requests
-    - main
+jobs:
+  scan:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run GitHub Action
+        id: scan
+        # uses: DSDO01/ci-cd-playground/actions/github@main
+        uses: ./.github/actions
+        with:
+          API_TOKEN: dedge_pat_bnvbdZ_l39qk1Gnt1seD4hdf-bmvBRXCXrIuRwb3pUk=
+          DEDGE_HOST_URL: https://scanning.free.beeceptor.com
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSET_ID: 047f620c-3e47-4142-a153-47d572295fa2

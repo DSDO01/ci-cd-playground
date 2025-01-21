@@ -1,52 +1,12 @@
-const axios = require('axios');
-
-
-async function triggerScan(apiToken, dedgeHostUrl, scanPayload) {
-    try {
-        const response = await axios.post(`${dedgeHostUrl}/integrations/scan-process/start`, scanPayload, {
-            headers: {
-                'X-API-Key': apiToken,
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log(response.data);
-        return response.data.scan_id;
-    } catch (error) {
-        throw new Error(`Failed to trigger scan: ${error.response.data.error}`);
-    }
-}
-
-async function pollScanResults(apiToken, dedgeHostUrl, scanId) {
-    try {
-        while (true) {
-            const response = await axios.get(`${dedgeHostUrl}/integrations/scan-process/${scanId}`, {
-                headers: {
-                    'X-API-Key': apiToken
-                }
-            });
-
-            const status = response.data.status;
-            const result = response.data.result;
-            const reportLink = response.data.report_link;
-
-            if (status === 'finished') {
-                console.log(response.data);
-                return { result, reportLink };
-            }
-
-            console.log(`Scan status: ${status}`);
-            await new Promise(resolve => setTimeout(resolve, 10000)); // Sleep for 10 seconds
-        }
-    } catch (error) {
-        throw new Error(`Failed to poll scan results: ${error.message}`);
-    }
-}
+const SecurityScan = require('../common/index.js');
+const Helper = require('../common/helper.js');
 
 async function run() {
     try {
         const apiToken = process.env.API_TOKEN;
         const dedgeHostUrl = process.env.DEDGE_HOST_URL;
         const gitlabToken = process.env.GITLAB_TOKEN;
+
         if (!apiToken) {
             throw new Error('API_TOKEN is required');
         }
@@ -59,7 +19,6 @@ async function run() {
 
         const assetId = process.env.ASSET_ID; // Assuming assetId is optional, no check added.
 
-        const triggerScanSuccessMessage = "🚀 A security scan has been triggered for this Pull Request. Stay tuned for updates! 🔍";
 
         const scanPayload = {
             branch: process.env.CI_COMMIT_REF_NAME,
@@ -72,37 +31,28 @@ async function run() {
             asset_id: assetId
         };
 
-        console.log(JSON.stringify(scanPayload));
-        let scanId;
         try {
-            scanId = await triggerScan(apiToken, dedgeHostUrl, scanPayload);
+            let scanId = await SecurityScan.triggerScan(apiToken, dedgeHostUrl, scanPayload);
             console.log(`Scan ID: ${scanId}`);
         } catch (error) {
             console.error(`Failed to trigger scan: ${error.message}`);
             process.exit(1); // Exit the process if triggering the scan fails
         }
 
-        displayFormattedMessage(triggerScanSuccessMessage);
+        const triggerScanSuccessMessage = Helper.displayTriggerScanSuccessMessage();
         if (process.env.CI_MERGE_REQUEST_IID) {
-            await postCommentOnMergeRequest(triggerScanSuccessMessage);
+            await postCommentOnMergeRequest(triggerScanSuccessMessage, gitlabToken);
         }
 
         try {
             const { result, reportLink } = await pollScanResults(apiToken, dedgeHostUrl, scanId);
             console.log(`Scan status: ${result}`);
 
-            let message;
-            if (result === 'success') {
-                message = `✅ Security scan completed successfully! View the detailed report [here](${reportLink}).`;
-            } else if (result === 'failure') {
-                message = `❌ Security scan failed. Review the report for more details [here](${reportLink}).`;
-            } else {
-                message = "⚠️ Security scan finished, but the result is unknown.";
-            }
+            let messageScanResult;
+            messageScanResult = Helper.displayScanResultMessage(result, reportLink);
 
-            displayFormattedMessage(message);
             if (process.env.CI_MERGE_REQUEST_IID) {
-                await postCommentOnMergeRequest(message);
+                await postCommentOnMergeRequest(messageScanResult, gitlabToken);
             }
         } catch (error) {
             console.error(`Failed to poll scan results: ${error.message}`);
@@ -116,7 +66,6 @@ async function run() {
 }
 
 async function postCommentOnMergeRequest(message) {
-    const gitlabToken = process.env.GITLAB_TOKEN;
     const projectId = process.env.CI_PROJECT_ID;
     const mergeRequestIid = process.env.CI_MERGE_REQUEST_IID;
 
@@ -125,7 +74,7 @@ async function postCommentOnMergeRequest(message) {
             body: message
         }, {
             headers: {
-                'PRIVATE-TOKEN': gitlabToken,
+                'PRIVATE-TOKEN': token,
                 'Content-Type': 'application/json'
             }
         });
@@ -137,8 +86,3 @@ async function postCommentOnMergeRequest(message) {
 
 run();
 
-function displayFormattedMessage(message) {
-    const messageLength = message.length + 4; // Add extra space for padding
-    const border = '-'.repeat(messageLength);
-    console.log(`${border}\n| ${message} |\n${border}`);
-}

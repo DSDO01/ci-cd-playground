@@ -1,54 +1,16 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const axios = require('axios');
-
-async function triggerScan(apiToken, dedgeHostUrl, scanPayload) {
-    try {
-        const response = await axios.post(`${dedgeHostUrl}/integrations/scan-process/start`, scanPayload, {
-            headers: {
-                'X-API-Key': apiToken,
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log(response.data);
-        return response.data.scan_id;
-    } catch (error) {
-        throw new Error(`Failed to trigger scan: ${error.response.data.error}`);
-    }
-}
-
-async function pollScanResults(apiToken, dedgeHostUrl, scanId) {
-    try {
-        while (true) {
-            const response = await axios.get(`${dedgeHostUrl}/integrations/scan-process/${scanId}`, {
-                headers: {
-                    'X-API-Key': apiToken
-                }
-            });
-
-            const status = response.data.status;
-            const result = response.data.result;
-            const reportLink = response.data.report_link;
-
-            if (status === 'finished') {
-                console.log(response.data);
-                return { result, reportLink };
-            }
-
-            console.log(`Scan status: ${status}`);
-            await new Promise(resolve => setTimeout(resolve, 10000)); // Sleep for 10 seconds
-        }
-    } catch (error) {
-        throw new Error(`Failed to poll scan results: ${error.message}`);
-    }
-}
+const SecurityScan = require('../common/index.js'); // Import the SecurityScan class
+const Helper = require('../common/helper.js');
 
 async function run() {
     try {
         const apiToken = core.getInput('API_TOKEN', { required: true });
         const dedgeHostUrl = core.getInput('DEDGE_HOST_URL', { required: true });
-        const assetId = core.getInput('ASSET_ID');
         const githubToken = core.getInput('GITHUB_TOKEN', { required: true });
+        const assetId = core.getInput('ASSET_ID');
+
+        const scan = new SecurityScan(apiToken, dedgeHostUrl); // Create an instance of SecurityScan
 
         const branch = process.env.GITHUB_REF.replace('refs/heads/', '');
         const commit = process.env.GITHUB_SHA;
@@ -57,8 +19,6 @@ async function run() {
         const url = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
         const repositoryName = process.env.GITHUB_REPOSITORY.split('/').pop();
         const scmRepositoryId = parseInt(process.env.GITHUB_REPOSITORY_ID, 10);
-
-        const triggerScanSuccessMessage = "🚀 A security scan has been triggered for this Pull Request. Stay tuned for updates! 🔍";
 
         const scanPayload = {
             branch,
@@ -71,48 +31,35 @@ async function run() {
             asset_id: assetId
         };
 
-
-        console.log(JSON.stringify(scanPayload));
-        let scanId;
         try {
-            scanId = await triggerScan(apiToken, dedgeHostUrl, scanPayload);
+            let scanId = await scan.triggerScan(scanPayload); // Use the SecurityScan instance
             core.exportVariable('SCAN_ID', scanId);
+            console.log(`Scan ID: ${scanId}`);
         } catch (error) {
-            core.setFailed(`Failed to trigger scan: ${error.message}`);
-            return; // Exit the function if triggering the scan fails
+            console.error(`Failed to trigger scan: ${error.message}`);
+            process.exit(1);
         }
 
-
-        displayFormattedMessage(triggerScanSuccessMessage);
+        const triggerScanSuccessMessage = Helper.displayTriggerScanSuccessMessage();
         if (github.context.eventName === 'pull_request') {
             await postComment(triggerScanSuccessMessage, githubToken);
         }
 
         try {
-            const scanStatusData = await pollScanResults(apiToken, dedgeHostUrl, scanId);
-            const scanStatus = scanStatusData.result;
-            const reportLink = scanStatusData.reportLink;
-            core.setOutput('scan_status', scanStatus);
+            const { result, reportLink } = await scan.pollScanResults(scanId); // Use the SecurityScan instance
+            core.setOutput('scan_status', result);
             core.setOutput('report_link', reportLink);
 
-            let message;
-            if (scanStatus === 'success') {
-                message = `✅ Security scan completed successfully! View the detailed report [here](${reportLink}).`;
-            } else if (scanStatus === 'failure') {
-                message = `❌ Security scan failed. Review the report for more details [here](${reportLink}).`;
-            } else {
-                message = "⚠️ Security scan finished, but the result is unknown.";
-            }
+            let messageScanResult;
+            messageScanResult = Helper.displayScanResultMessage(result, reportLink);
 
-            displayFormattedMessage(message);
             if (github.context.eventName === 'pull_request') {
-                await postComment(message, githubToken);
+                await postComment(messageScanResult, githubToken);
             }
         } catch (error) {
-            core.setFailed(`Failed to poll scan results: ${error.message}`);
+            console.error(`Failed to poll scan results: ${error.message}`);
+            process.exit(1);
         }
-
-
 
     } catch (error) {
         core.setFailed(`Action failed with error: ${error.message}`);
@@ -138,8 +85,4 @@ async function postComment(message, token) {
 
 run();
 
-function displayFormattedMessage(message) {
-    const messageLength = message.length + 4; // Add extra space for padding
-    const border = '-'.repeat(messageLength);
-    console.log(`${border}\n| ${message} |\n${border}`);
-}
+

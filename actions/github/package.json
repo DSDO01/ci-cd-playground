@@ -1,23 +1,23 @@
 {
     "name": "scan-action",
     "version": "1.0.0",
-    "main": "actions/github/index.js",
+    "main": "index.js",
     "dependencies": {
         "@actions/core": "^1.11.1",
         "@actions/github": "^6.0.0",
         "axios": "^1.7.9"
     },
-    "description": "This repository contains actions for both GitHub and GitLab.",
+    "description": "This repository contains actions for GitHub.",
     "scripts": {
+        "build": "npm install",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [
         "github",
-        "gitlab",
         "actions",
         "security",
         "scan"
     ],
     "author": "Dedge Security",
-    "license": "ISC"
+    "license": "MIT"
 }
