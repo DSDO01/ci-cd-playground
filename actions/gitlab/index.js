@@ -46,12 +46,15 @@ async function run() {
     try {
         const apiToken = process.env.API_TOKEN;
         const dedgeHostUrl = process.env.DEDGE_HOST_URL;
-
+        const gitlabToken = process.env.GITLAB_TOKEN;
         if (!apiToken) {
             throw new Error('API_TOKEN is required');
         }
         if (!dedgeHostUrl) {
             throw new Error('DEDGE_HOST_URL is required');
+        }
+        if (!gitlabToken) {
+            throw new Error('GITLAB_TOKEN is required');
         }
 
         const assetId = process.env.ASSET_ID; // Assuming assetId is optional, no check added.
@@ -116,11 +119,6 @@ async function postCommentOnMergeRequest(message) {
     const gitlabToken = process.env.GITLAB_TOKEN;
     const projectId = process.env.CI_PROJECT_ID;
     const mergeRequestIid = process.env.CI_MERGE_REQUEST_IID;
-
-    if (!gitlabToken) {
-        console.log('Skipping comment posting as GITLAB_TOKEN is not set.');
-        return;
-    }
 
     try {
         await axios.post(`https://gitlab.com/api/v4/projects/${projectId}/merge_requests/${mergeRequestIid}/notes`, {

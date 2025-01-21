@@ -48,6 +48,7 @@ async function run() {
         const apiToken = core.getInput('API_TOKEN', { required: true });
         const dedgeHostUrl = core.getInput('DEDGE_HOST_URL', { required: true });
         const assetId = core.getInput('ASSET_ID');
+        const githubToken = core.getInput('GITHUB_TOKEN', { required: true });
 
         const branch = process.env.GITHUB_REF.replace('refs/heads/', '');
         const commit = process.env.GITHUB_SHA;
@@ -84,7 +85,7 @@ async function run() {
 
         displayFormattedMessage(triggerScanSuccessMessage);
         if (github.context.eventName === 'pull_request') {
-            await postComment(triggerScanSuccessMessage);
+            await postComment(triggerScanSuccessMessage, githubToken);
         }
 
         try {
@@ -105,7 +106,7 @@ async function run() {
 
             displayFormattedMessage(message);
             if (github.context.eventName === 'pull_request') {
-                await postComment(message);
+                await postComment(message, githubToken);
             }
         } catch (error) {
             core.setFailed(`Failed to poll scan results: ${error.message}`);
@@ -118,10 +119,8 @@ async function run() {
     }
 }
 
-async function postComment(message) {
+async function postComment(message, token) {
     try {
-        const token = core.getInput('GITHUB_TOKEN', { required: true });
-
         const octokit = github.getOctokit(token);
         const { owner, repo } = github.context.repo;
         const issueNumber = github.context.payload.pull_request.number;
