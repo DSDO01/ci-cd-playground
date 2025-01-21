@@ -1,6 +1,120 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 654:
+/***/ ((module) => {
+
+
+class Helper {
+
+    static displayFormattedMessage(message) {
+        const messageLength = message.length + 4; // Add extra space for padding
+        const border = '-'.repeat(messageLength);
+        console.log(`${border}\n| ${message} |\n${border}`);
+    }
+
+    static displayTriggerScanSuccessMessage() {
+        const triggerScanSuccessMessage = "🚀 A security scan has been triggered for this Pull Request. Stay tuned for updates! 🔍";
+        this.displayFormattedMessage(triggerScanSuccessMessage);
+
+        return triggerScanSuccessMessage;
+    }
+
+    static displayScanSuccessMessage(reportLink) {
+        const scanSuccessMessage = `✅ Security scan completed successfully! View the detailed report [here](${reportLink}).`;
+        this.displayFormattedMessage(scanSuccessMessage);
+
+        return scanSuccessMessage;
+    }
+
+    static displayScanFailureMessage(reportLink) {
+        const scanFailureMessage = `❌ Security scan failed. Review the report for more details [here](${reportLink}).`;
+        this.displayFormattedMessage(scanFailureMessage);
+
+        return scanFailureMessage;
+    }
+
+    static displayScanFinishedMessage() {
+        const scanFinishedMessage = "⚠️ Security scan finished, but the result is unknown.";
+        this.displayFormattedMessage(scanFinishedMessage);
+
+        return scanFinishedMessage;
+    }
+
+    static displayScanResultMessage(result, reportLink) {
+        if (result === 'success') {
+            return this.displayScanSuccessMessage(reportLink);
+        } else if (result === 'failure') {
+            return this.displayScanFailureMessage(reportLink);
+        } else {
+            return this.displayScanFinishedMessage();
+        }
+    }
+}
+
+module.exports = Helper; 
+
+
+/***/ }),
+
+/***/ 624:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const axios = __nccwpck_require__(150);
+
+class SecurityScan {
+    constructor(apiToken, dedgeHostUrl) {
+        this.apiToken = apiToken;
+        this.dedgeHostUrl = dedgeHostUrl;
+    }
+
+    async triggerScan(scanPayload) {
+        try {
+            const response = await axios.post(`${this.dedgeHostUrl}/integrations/scan-process/start`, scanPayload, {
+                headers: {
+                    'X-API-Key': this.apiToken,
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log(response.data);
+            return response.data.scan_id;
+        } catch (error) {
+            throw new Error(`Failed to trigger scan: ${error.response.data.error}`);
+        }
+    }
+
+    async pollScanResults(scanId) {
+        try {
+            while (true) {
+                const response = await axios.get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
+                    headers: {
+                        'X-API-Key': this.apiToken
+                    }
+                });
+
+                const status = response.data.status;
+                const result = response.data.result;
+                const reportLink = response.data.report_link;
+
+                if (status === 'finished') {
+                    console.log(response.data);
+                    return { result, reportLink };
+                }
+
+                console.log(`Scan status: ${status}`);
+                await new Promise(resolve => setTimeout(resolve, 10000)); // Sleep for 10 seconds
+            }
+        } catch (error) {
+            throw new Error(`Failed to poll scan results: ${error.message}`);
+        }
+    }
+}
+
+module.exports = SecurityScan; 
+
+
+/***/ }),
+
 /***/ 453:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -206,7 +320,7 @@ function runJob(iterator, key, item, callback)
 
 /***/ }),
 
-/***/ 624:
+/***/ 243:
 /***/ ((module) => {
 
 // API
@@ -290,7 +404,7 @@ function terminator(callback)
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 var iterate    = __nccwpck_require__(511)
-  , initState  = __nccwpck_require__(624)
+  , initState  = __nccwpck_require__(243)
   , terminator = __nccwpck_require__(272)
   ;
 
@@ -364,7 +478,7 @@ function serial(list, iterator, callback)
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
 var iterate    = __nccwpck_require__(511)
-  , initState  = __nccwpck_require__(624)
+  , initState  = __nccwpck_require__(243)
   , terminator = __nccwpck_require__(272)
   ;
 
@@ -780,7 +894,7 @@ module.exports = function () {
   if (!debug) {
     try {
       /* eslint global-require: off */
-      debug = __nccwpck_require__(502)("follow-redirects");
+      debug = __nccwpck_require__(121)("follow-redirects");
     }
     catch (error) { /* */ }
     if (typeof debug !== "function") {
@@ -2342,7 +2456,7 @@ exports.getProxyForUrl = getProxyForUrl;
 
 /***/ }),
 
-/***/ 502:
+/***/ 121:
 /***/ ((module) => {
 
 module.exports = eval("require")("debug");
@@ -2427,120 +2541,6 @@ module.exports = require("util");
 
 "use strict";
 module.exports = require("zlib");
-
-/***/ }),
-
-/***/ 535:
-/***/ ((module) => {
-
-
-class Helper {
-
-    static displayFormattedMessage(message) {
-        const messageLength = message.length + 4; // Add extra space for padding
-        const border = '-'.repeat(messageLength);
-        console.log(`${border}\n| ${message} |\n${border}`);
-    }
-
-    static displayTriggerScanSuccessMessage() {
-        const triggerScanSuccessMessage = "🚀 A security scan has been triggered for this Pull Request. Stay tuned for updates! 🔍";
-        this.displayFormattedMessage(triggerScanSuccessMessage);
-
-        return triggerScanSuccessMessage;
-    }
-
-    static displayScanSuccessMessage(reportLink) {
-        const scanSuccessMessage = `✅ Security scan completed successfully! View the detailed report [here](${reportLink}).`;
-        this.displayFormattedMessage(scanSuccessMessage);
-
-        return scanSuccessMessage;
-    }
-
-    static displayScanFailureMessage(reportLink) {
-        const scanFailureMessage = `❌ Security scan failed. Review the report for more details [here](${reportLink}).`;
-        this.displayFormattedMessage(scanFailureMessage);
-
-        return scanFailureMessage;
-    }
-
-    static displayScanFinishedMessage() {
-        const scanFinishedMessage = "⚠️ Security scan finished, but the result is unknown.";
-        this.displayFormattedMessage(scanFinishedMessage);
-
-        return scanFinishedMessage;
-    }
-
-    static displayScanResultMessage(result, reportLink) {
-        if (result === 'success') {
-            return this.displayScanSuccessMessage(reportLink);
-        } else if (result === 'failure') {
-            return this.displayScanFailureMessage(reportLink);
-        } else {
-            return this.displayScanFinishedMessage();
-        }
-    }
-}
-
-module.exports = Helper; 
-
-
-/***/ }),
-
-/***/ 435:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
-
-const axios = __nccwpck_require__(150);
-
-class SecurityScan {
-    constructor(apiToken, dedgeHostUrl) {
-        this.apiToken = apiToken;
-        this.dedgeHostUrl = dedgeHostUrl;
-    }
-
-    async triggerScan(scanPayload) {
-        try {
-            const response = await axios.post(`${this.dedgeHostUrl}/integrations/scan-process/start`, scanPayload, {
-                headers: {
-                    'X-API-Key': this.apiToken,
-                    'Content-Type': 'application/json'
-                }
-            });
-            console.log(response.data);
-            return response.data.scan_id;
-        } catch (error) {
-            throw new Error(`Failed to trigger scan: ${error.response.data.error}`);
-        }
-    }
-
-    async pollScanResults(scanId) {
-        try {
-            while (true) {
-                const response = await axios.get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
-                    headers: {
-                        'X-API-Key': this.apiToken
-                    }
-                });
-
-                const status = response.data.status;
-                const result = response.data.result;
-                const reportLink = response.data.report_link;
-
-                if (status === 'finished') {
-                    console.log(response.data);
-                    return { result, reportLink };
-                }
-
-                console.log(`Scan status: ${status}`);
-                await new Promise(resolve => setTimeout(resolve, 10000)); // Sleep for 10 seconds
-            }
-        } catch (error) {
-            throw new Error(`Failed to poll scan results: ${error.message}`);
-        }
-    }
-}
-
-module.exports = SecurityScan; 
-
 
 /***/ }),
 
@@ -7351,8 +7351,8 @@ module.exports = /*#__PURE__*/JSON.parse('{"application/1d-interleaved-parityfec
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-const SecurityScan = __nccwpck_require__(435);
-const Helper = __nccwpck_require__(535);
+const SecurityScan = __nccwpck_require__(624);
+const Helper = __nccwpck_require__(654);
 
 async function run() {
     try {
