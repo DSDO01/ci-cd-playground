@@ -2,6 +2,7 @@
     "name": "scan-action",
     "version": "1.0.0",
     "main": "index.js",
+    "type": "module",
     "dependencies": {
         "axios": "^1.7.9"
     },
@@ -16,5 +17,5 @@
         "scan"
     ],
     "author": "Dedge Security",
-    "license": "ISC"
+    "license": "MIT"
 }
