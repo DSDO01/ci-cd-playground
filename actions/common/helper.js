@@ -1,5 +1,5 @@
 
-class Helper {
+export class Helper {
 
     static displayFormattedMessage(message) {
         const messageLength = message.length + 4; // Add extra space for padding
@@ -46,4 +46,3 @@ class Helper {
     }
 }
 
-module.exports = Helper; 

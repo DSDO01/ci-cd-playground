@@ -1,5 +1,5 @@
-const SecurityScan = require('../common/index.js');
-const Helper = require('../common/helper.js');
+import { SecurityScan } from '../common/index.js';
+import { Helper } from '../common/helper.js';
 
 async function run() {
     try {

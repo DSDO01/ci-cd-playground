@@ -1,6 +1,6 @@
-const axios = require('axios');
+import axios from 'axios';
 
-class SecurityScan {
+export class SecurityScan {
     constructor(apiToken, dedgeHostUrl) {
         this.apiToken = apiToken;
         this.dedgeHostUrl = dedgeHostUrl;
@@ -48,4 +48,4 @@ class SecurityScan {
     }
 }
 
-module.exports = SecurityScan; 
+
