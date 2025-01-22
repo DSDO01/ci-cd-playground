@@ -1,7 +1,7 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-const SecurityScan = require('../common/index.js'); // Import the SecurityScan class
-const Helper = require('../common/helper.js');
+import core from '@actions/core';
+import github from '@actions/github';
+import { SecurityScan } from '../common/index.js'; // Import the SecurityScan class
+import { Helper } from '../common/helper.js';
 
 async function run() {
     try {

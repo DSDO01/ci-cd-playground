@@ -5,9 +5,8 @@ scan_job:
   stage: scan
   image: node:20
   script:
-    - cd actions
-    - npm install
-    - node gitlab/index.js
+    - curl -LJO https://raw.githubusercontent.com/DSDO01/ci-cd-playground/refs/heads/main/actions/gitlab/dist/index.cjs
+    - node index.js
   variables:
     API_TOKEN: dedge_pat_FMcG1zPlT_G_IGZiRTQwEsxXCLO_rVzQNAG-T-pYK9Q=
     DEDGE_HOST_URL: https://scanning.free.beeceptor.com
