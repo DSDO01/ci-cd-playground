@@ -1,6 +1,5 @@
 var __defProp = Object.defineProperty;
 var __defProps = Object.defineProperties;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getOwnPropSymbols = Object.getOwnPropertySymbols;
@@ -23,25 +22,9 @@ var __spreadValues = (a, b) => {
   return a;
 };
 var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-var __esm = (fn, res) => function __init() {
-  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-};
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var __async = (__this, __arguments, generator) => {
   return new Promise((resolve, reject) => {
     var fulfilled = (value) => {
@@ -9997,14 +9980,14 @@ var require_follow_redirects = __commonJS({
           debug("options", options);
           return new RedirectableRequest(options, callback);
         }
-        function get2(input, options, callback) {
+        function get(input, options, callback) {
           var wrappedRequest = wrappedProtocol.request(input, options, callback);
           wrappedRequest.end();
           return wrappedRequest;
         }
         Object.defineProperties(wrappedProtocol, {
           request: { value: request, configurable: true, enumerable: true, writable: true },
-          get: { value: get2, configurable: true, enumerable: true, writable: true }
+          get: { value: get, configurable: true, enumerable: true, writable: true }
         });
       });
       return exports3;
@@ -13294,15 +13277,10 @@ var require_axios = __commonJS({
 });
 
 // ../common/index.js
-var common_exports = {};
-__export(common_exports, {
-  default: () => common_default
-});
-var post, get, SecurityScan, common_default;
-var init_common = __esm({
-  "../common/index.js"() {
-    ({ post, get } = require_axios());
-    SecurityScan = class {
+var require_common = __commonJS({
+  "../common/index.js"(exports2, module2) {
+    var axios2 = require_axios();
+    var SecurityScan2 = class {
       constructor(apiToken, dedgeHostUrl) {
         this.apiToken = apiToken;
         this.dedgeHostUrl = dedgeHostUrl;
@@ -13310,7 +13288,7 @@ var init_common = __esm({
       triggerScan(scanPayload) {
         return __async(this, null, function* () {
           try {
-            const response = yield post(`${this.dedgeHostUrl}/integrations/scan-process`, scanPayload, {
+            const response = yield axios2.post(`${this.dedgeHostUrl}/integrations/scan-process`, scanPayload, {
               headers: {
                 "X-API-Key": this.apiToken,
                 "Content-Type": "application/json"
@@ -13326,7 +13304,7 @@ var init_common = __esm({
         return __async(this, null, function* () {
           try {
             while (true) {
-              const response = yield get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
+              const response = yield axios2.get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
                 headers: {
                   "X-API-Key": this.apiToken
                 }
@@ -13345,7 +13323,7 @@ var init_common = __esm({
         });
       }
     };
-    common_default = SecurityScan;
+    module2.exports = SecurityScan2;
   }
 });
 
@@ -23284,14 +23262,14 @@ var require_follow_redirects2 = __commonJS({
           debug("options", options);
           return new RedirectableRequest(options, callback);
         }
-        function get2(input, options, callback) {
+        function get(input, options, callback) {
           var wrappedRequest = wrappedProtocol.request(input, options, callback);
           wrappedRequest.end();
           return wrappedRequest;
         }
         Object.defineProperties(wrappedProtocol, {
           request: { value: request, configurable: true, enumerable: true, writable: true },
-          get: { value: get2, configurable: true, enumerable: true, writable: true }
+          get: { value: get, configurable: true, enumerable: true, writable: true }
         });
       });
       return exports3;
@@ -26581,7 +26559,7 @@ var require_axios2 = __commonJS({
 });
 
 // index.js
-var SecurityScan2 = (init_common(), __toCommonJS(common_exports));
+var SecurityScan = require_common();
 var Helper = require_helper();
 var axios = require_axios2();
 function run() {
@@ -26600,7 +26578,7 @@ function run() {
         throw new Error("GITLAB_TOKEN is required");
       }
       const assetId = process.env.ASSET_ID;
-      const scan = new SecurityScan2(apiToken, dedgeHostUrl);
+      const scan = new SecurityScan(apiToken, dedgeHostUrl);
       let scanPayload = {
         branch: process.env.CI_COMMIT_REF_NAME,
         commit: process.env.CI_COMMIT_SHA,
