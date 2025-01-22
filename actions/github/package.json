@@ -9,7 +9,7 @@
     },
     "description": "This repository contains actions for GitHub.",
     "scripts": {
-        "build": "ncc build index.js -o dist --target es2015 --minify && mv dist/index.js ../../dist/github/index.cjs",
+        "build": "ncc build index.js -o dist --target es2015 --minify && mv dist/index.js dist/index.cjs",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [
