@@ -1,0 +1,21 @@
+name: "Trigger and Monitor Security Scan"
+description: "Triggers a scan process via API, monitors results, and posts comments on Pull Requests."
+inputs:
+  api_token:
+    description: "The API authentication token."
+    required: true
+  dedge_host_url:
+    description: "The host URL for the API."
+    required: true
+  asset_id:
+    description: "Optional asset ID for the scan."
+    required: false
+  github_token:
+    description: "GitHub token for posting comments."
+    required: true
+outputs:
+  scan_status:
+    description: "The final status of the scan."
+runs:
+  using: "node20"
+  main: "dist/index.cjs"

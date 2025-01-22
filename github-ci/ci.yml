@@ -1,0 +1,31 @@
+name: "Execute CI/CD Scan"
+on:
+  pull_request:
+    types: [opened, synchronize, closed]
+  push:
+    branches:
+      - main
+
+jobs:
+  scan:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4.1.0
+        with:
+          node-version: "20"
+
+      - name: Run GitHub Action
+        id: scan
+        uses: DSDO01/ci-cd-playground/actions/github@main
+        with:
+          API_TOKEN: ${{ secrets.DEDGE_API_TOKEN }}
+          DEDGE_HOST_URL: ${{ vars.DEDGE_HOST_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ASSET_ID: ${{ vars.ASSET_ID }} # This field is optional, if you would like to trigger a scan on a specific asset.

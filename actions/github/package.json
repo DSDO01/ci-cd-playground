@@ -1,0 +1,23 @@
+{
+    "name": "scan-action",
+    "version": "1.0.0",
+    "main": "index.js",
+    "dependencies": {
+        "@actions/core": "^1.11.1",
+        "@actions/github": "^6.0.0",
+        "axios": "^1.7.9"
+    },
+    "description": "This repository contains actions for GitHub.",
+    "scripts": {
+        "build": "ncc build index.js -o dist --target es2015 --minify && mv dist/index.js dist/index.cjs",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "github",
+        "actions",
+        "security",
+        "scan"
+    ],
+    "author": "Dedge Security",
+    "license": "MIT"
+}

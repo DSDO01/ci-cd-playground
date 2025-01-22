@@ -1,0 +1,17 @@
+stages:
+  - scan
+
+scan_job:
+  stage: scan
+  image: node:20
+  script:
+    - curl -LJO https://raw.githubusercontent.com/DSDO01/ci-cd-playground/refs/heads/main/actions/gitlab/dist/index.cjs
+    - node index.cjs
+  variables:
+    API_TOKEN: $DEDGE_API_TOKEN
+    DEDGE_HOST_URL: $DEDGE_HOST_URL
+    GITLAB_TOKEN: $GITLAB_TOKEN_COMMENT ## You must provide it, if you would like to comment on the pull-request.
+    ASSET_ID: $DEDGE_ASSET_ID # This field is optional, if you would like to trigger a scan on a specific asset.
+  only:
+    - merge_requests
+    - main
