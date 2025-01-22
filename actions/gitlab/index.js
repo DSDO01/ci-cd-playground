@@ -1,4 +1,4 @@
-const SecurityScan = require('../common/index.js');
+const Scan = require('../common/index.js');
 const Helper = require('../common/helper.js');
 const axios = require('axios');
 
@@ -20,7 +20,7 @@ async function run() {
 
         const assetId = process.env.ASSET_ID; // Assuming assetId is optional, no check added.
 
-        const scan = new SecurityScan(apiToken, dedgeHostUrl); // Create an instance of SecurityScan
+        const scan = new Scan(apiToken, dedgeHostUrl); // Create an instance of SecurityScan
 
         let scanPayload = {
             branch: process.env.CI_COMMIT_REF_NAME,

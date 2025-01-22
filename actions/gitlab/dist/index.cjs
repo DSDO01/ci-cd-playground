@@ -13280,7 +13280,7 @@ var require_axios = __commonJS({
 var require_common = __commonJS({
   "../common/index.js"(exports2, module2) {
     var axios2 = require_axios();
-    var SecurityScan2 = class {
+    var SecurityScan = class {
       constructor(apiToken, dedgeHostUrl) {
         this.apiToken = apiToken;
         this.dedgeHostUrl = dedgeHostUrl;
@@ -13323,7 +13323,7 @@ var require_common = __commonJS({
         });
       }
     };
-    module2.exports = SecurityScan2;
+    module2.exports = SecurityScan;
   }
 });
 
@@ -26559,7 +26559,7 @@ var require_axios2 = __commonJS({
 });
 
 // index.js
-var SecurityScan = require_common();
+var Scan = require_common();
 var Helper = require_helper();
 var axios = require_axios2();
 function run() {
@@ -26578,7 +26578,7 @@ function run() {
         throw new Error("GITLAB_TOKEN is required");
       }
       const assetId = process.env.ASSET_ID;
-      const scan = new SecurityScan(apiToken, dedgeHostUrl);
+      const scan = new Scan(apiToken, dedgeHostUrl);
       let scanPayload = {
         branch: process.env.CI_COMMIT_REF_NAME,
         commit: process.env.CI_COMMIT_SHA,
