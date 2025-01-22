@@ -4,6 +4,9 @@
 
 all: github gitlab
 
+installnpm:
+	cd actions/common && npm install
+
 github:
 	@echo "Building GitHub action..."
 	cd actions/github && npm install && npm run build

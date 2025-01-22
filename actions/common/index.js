@@ -1,4 +1,4 @@
-import { post, get } from 'axios';
+const axios = require('axios')
 
 class SecurityScan {
     constructor(apiToken, dedgeHostUrl) {
@@ -8,7 +8,7 @@ class SecurityScan {
 
     async triggerScan(scanPayload) {
         try {
-            const response = await post(`${this.dedgeHostUrl}/integrations/scan-process`, scanPayload, {
+            const response = await axios.post(`${this.dedgeHostUrl}/integrations/scan-process`, scanPayload, {
                 headers: {
                     'X-API-Key': this.apiToken,
                     'Content-Type': 'application/json'
@@ -23,7 +23,7 @@ class SecurityScan {
     async pollScanResults(scanId) {
         try {
             while (true) {
-                const response = await get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
+                const response = await axios.get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
                     headers: {
                         'X-API-Key': this.apiToken
                     }
@@ -46,4 +46,4 @@ class SecurityScan {
 }
 
 
-export default SecurityScan;
+module.exports = SecurityScan;
