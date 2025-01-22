@@ -1,6 +1,6 @@
-const SecurityScan = require('../common/index.js');
-const Helper = require('../common/helper.js');
-const axios = require('axios');
+import SecurityScan from '../common/index.js';
+import { displayTriggerScanSuccessMessage, displayScanResultMessage } from '../common/helper.js';
+import { post } from 'axios';
 
 async function run() {
     try {
@@ -44,7 +44,7 @@ async function run() {
             process.exit(1); // Exit the process if triggering the scan fails
         }
 
-        const triggerScanSuccessMessage = Helper.displayTriggerScanSuccessMessage();
+        const triggerScanSuccessMessage = displayTriggerScanSuccessMessage();
         if (process.env.CI_MERGE_REQUEST_IID) {
             await postCommentOnMergeRequest(triggerScanSuccessMessage, gitlabToken);
         }
@@ -54,7 +54,7 @@ async function run() {
             console.log(`Scan status: ${result}`);
 
             let messageScanResult;
-            messageScanResult = Helper.displayScanResultMessage(result, reportLink);
+            messageScanResult = displayScanResultMessage(result, reportLink);
 
             if (process.env.CI_MERGE_REQUEST_IID) {
                 await postCommentOnMergeRequest(messageScanResult, gitlabToken);
@@ -75,7 +75,7 @@ async function postCommentOnMergeRequest(message, token) {
     const mergeRequestIid = process.env.CI_MERGE_REQUEST_IID;
 
     try {
-        await axios.post(`https://gitlab.com/api/v4/projects/${projectId}/merge_requests/${mergeRequestIid}/notes`, {
+        await post(`https://gitlab.com/api/v4/projects/${projectId}/merge_requests/${mergeRequestIid}/notes`, {
             body: message
         }, {
             headers: {
