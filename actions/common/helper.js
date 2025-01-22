@@ -1,4 +1,3 @@
-
 class Helper {
 
     static displayFormattedMessage(message) {
