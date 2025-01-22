@@ -1,5 +1,6 @@
 const SecurityScan = require('../common/index.js');
 const Helper = require('../common/helper.js');
+const axios = require('axios');
 
 async function run() {
     try {
@@ -19,8 +20,9 @@ async function run() {
 
         const assetId = process.env.ASSET_ID; // Assuming assetId is optional, no check added.
 
+        const scan = new SecurityScan(apiToken, dedgeHostUrl); // Create an instance of SecurityScan
 
-        const scanPayload = {
+        let scanPayload = {
             branch: process.env.CI_COMMIT_REF_NAME,
             commit: process.env.CI_COMMIT_SHA,
             scm_provider: 'gitlab',
@@ -31,8 +33,11 @@ async function run() {
             asset_id: assetId
         };
 
+
+        let scanId;
+
         try {
-            let scanId = await SecurityScan.triggerScan(apiToken, dedgeHostUrl, scanPayload);
+            scanId = await scan.triggerScan(scanPayload);
             console.log(`Scan ID: ${scanId}`);
         } catch (error) {
             console.error(`Failed to trigger scan: ${error.message}`);
@@ -45,7 +50,7 @@ async function run() {
         }
 
         try {
-            const { result, reportLink } = await pollScanResults(apiToken, dedgeHostUrl, scanId);
+            const { result, reportLink } = await scan.pollScanResults(scanId);
             console.log(`Scan status: ${result}`);
 
             let messageScanResult;
@@ -65,7 +70,7 @@ async function run() {
     }
 }
 
-async function postCommentOnMergeRequest(message) {
+async function postCommentOnMergeRequest(message, token) {
     const projectId = process.env.CI_PROJECT_ID;
     const mergeRequestIid = process.env.CI_MERGE_REQUEST_IID;
 
