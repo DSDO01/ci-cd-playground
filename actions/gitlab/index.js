@@ -1,6 +1,6 @@
-import SecurityScan from '../common/index.js';
-import { displayTriggerScanSuccessMessage, displayScanResultMessage } from '../common/helper.js';
-import { post } from 'axios';
+const SecurityScan = require('../common/index.js').default;
+const Helper = require('../common/helper.js');
+const axios = require('axios');
 
 async function run() {
     try {
@@ -20,7 +20,7 @@ async function run() {
 
         const assetId = process.env.ASSET_ID; // Assuming assetId is optional, no check added.
 
-        const scan = new SecurityScan(apiToken, dedgeHostUrl); // Create an instance of SecurityScan
+        const scan = new SecurityScan(apiToken, dedgeHostUrl, axios); // Create an instance of SecurityScan
 
         let scanPayload = {
             branch: process.env.CI_COMMIT_REF_NAME,
@@ -44,7 +44,7 @@ async function run() {
             process.exit(1); // Exit the process if triggering the scan fails
         }
 
-        const triggerScanSuccessMessage = displayTriggerScanSuccessMessage();
+        const triggerScanSuccessMessage = Helper.displayTriggerScanSuccessMessage();
         if (process.env.CI_MERGE_REQUEST_IID) {
             await postCommentOnMergeRequest(triggerScanSuccessMessage, gitlabToken);
         }
@@ -54,7 +54,7 @@ async function run() {
             console.log(`Scan status: ${result}`);
 
             let messageScanResult;
-            messageScanResult = displayScanResultMessage(result, reportLink);
+            messageScanResult = Helper.displayScanResultMessage(result, reportLink);
 
             if (process.env.CI_MERGE_REQUEST_IID) {
                 await postCommentOnMergeRequest(messageScanResult, gitlabToken);
@@ -75,7 +75,7 @@ async function postCommentOnMergeRequest(message, token) {
     const mergeRequestIid = process.env.CI_MERGE_REQUEST_IID;
 
     try {
-        await post(`https://gitlab.com/api/v4/projects/${projectId}/merge_requests/${mergeRequestIid}/notes`, {
+        await axios.post(`https://gitlab.com/api/v4/projects/${projectId}/merge_requests/${mergeRequestIid}/notes`, {
             body: message
         }, {
             headers: {
