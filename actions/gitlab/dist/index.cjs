@@ -119,11 +119,12 @@ var init_common = __esm({
       constructor(apiToken, dedgeHostUrl, axios2) {
         this.apiToken = apiToken;
         this.dedgeHostUrl = dedgeHostUrl;
+        this.axios = axios2;
       }
       triggerScan(scanPayload) {
         return __async(this, null, function* () {
           try {
-            const response = yield post(`${this.dedgeHostUrl}/integrations/scan-process`, scanPayload, {
+            const response = yield this.axios.post(`${this.dedgeHostUrl}/integrations/scan-process`, scanPayload, {
               headers: {
                 "X-API-Key": this.apiToken,
                 "Content-Type": "application/json"
@@ -139,7 +140,7 @@ var init_common = __esm({
         return __async(this, null, function* () {
           try {
             while (true) {
-              const response = yield get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
+              const response = yield this.axios.get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
                 headers: {
                   "X-API-Key": this.apiToken
                 }
@@ -10097,14 +10098,14 @@ var require_follow_redirects = __commonJS({
           debug("options", options);
           return new RedirectableRequest(options, callback);
         }
-        function get2(input, options, callback) {
+        function get(input, options, callback) {
           var wrappedRequest = wrappedProtocol.request(input, options, callback);
           wrappedRequest.end();
           return wrappedRequest;
         }
         Object.defineProperties(wrappedProtocol, {
           request: { value: request, configurable: true, enumerable: true, writable: true },
-          get: { value: get2, configurable: true, enumerable: true, writable: true }
+          get: { value: get, configurable: true, enumerable: true, writable: true }
         });
       });
       return exports3;
