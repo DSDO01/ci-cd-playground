@@ -1,10 +1,10 @@
 # Makefile to build GitHub and GitLab actions
 
-.PHONY: all github gitlab
+.PHONY: build install-dependencies github gitlab
 
-all: github gitlab
+build: install-dependencies github gitlab
 
-installnpm:
+install-dependencies:
 	cd actions/common && npm install
 
 github:
