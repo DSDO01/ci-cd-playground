@@ -106,3 +106,95 @@ Completing these steps ensures that the pipeline can comment on merge requests.
 ## Shared Code
 
 The `actions/common/` directory contains common utilities and classes, including the `SecurityScan` class. This class is integral to both GitHub and GitLab actions for managing the security scanning process.
+
+## Manual Implementation Instructions
+
+If you prefer to manually implement the security scanning process without using the provided GitHub or GitLab actions, you can directly interact with the security scan API. Below are the steps and details for both GitHub and GitLab SCM platforms.
+
+### Endpoint and Host
+
+The security scan API is accessible at the following endpoint:
+
+- **Endpoint:** `/integrations/scan-processes`
+- **Host:** `DEDGE_HOST_URL` (Replace `DEDGE_HOST_URL` with the actual host URL provided in your environment setup)
+
+### Required Data
+
+The data required to trigger a scan includes:
+
+- `branch`: The branch name where the scan is to be triggered.
+- `commit`: The commit SHA at which the scan should be performed.
+- `scm_provider`: The source code management (SCM) provider, e.g., 'github' or 'gitlab'.
+- `clone_url`: The URL used to clone the repository.
+- `url`: The URL to the repository on the SCM platform.
+- `scm_repository_id`: The unique identifier for the repository in the SCM.
+- `repository_name`: The name of the repository.
+- `asset_id`: (Optional) The specific asset ID to scan.
+
+### Obtaining Values for Payload
+
+#### GitHub:
+- **branch**: Available as `process.env.GITHUB_REF_NAME` in GitHub Actions.
+- **commit**: Available as `process.env.GITHUB_SHA` in GitHub Actions.
+- **scm_provider**: Set this to 'github'.
+- **clone_url**: Constructed as `https://github.com/${process.env.GITHUB_REPOSITORY}.git`.
+- **url**: Constructed as `https://github.com/${process.env.GITHUB_REPOSITORY}`.
+- **scm_repository_id**: Available as `process.env.GITHUB_REPOSITORY_ID` in GitHub Actions.
+- **repository_name**: Available as `process.env.GITHUB_REPOSITORY` in GitHub Actions, split the value to get the repository name.
+
+#### GitLab:
+- **branch**: Available as `process.env.CI_COMMIT_REF_NAME` in GitLab CI/CD.
+- **commit**: Available as `process.env.CI_COMMIT_SHA` in GitLab CI/CD.
+- **scm_provider**: Set this to 'gitlab'.
+- **clone_url**: Available as `process.env.CI_REPOSITORY_URL` in GitLab CI/CD.
+- **url**: Constructed as `process.env.CI_PROJECT_URL`.
+- **scm_repository_id**: Available as `process.env.CI_PROJECT_ID` in GitLab CI/CD.
+- **repository_name**: Available as `process.env.CI_PROJECT_NAME` in GitLab CI/CD.
+
+### GitHub Manual Implementation
+
+1. **Prepare the Payload:**
+   Gather all the necessary data as mentioned above. For GitHub, you can extract these from the environment variables available in GitHub Actions or from the repository settings.
+
+2. **Trigger the Scan:**
+   Use a tool like `curl` or any HTTP client in your programming language of choice to send a POST request to the API.
+
+   ```bash
+   curl -X POST -H "Content-Type: application/json" -H "X-API-Key: YOUR_DEDGE_API_TOKEN" \
+        -d '{
+            "branch": "main",
+            "commit": "commit_sha",
+            "scm_provider": "github",
+            "clone_url": "https://github.com/user/repo.git",
+            "url": "https://github.com/user/repo",
+            "scm_repository_id": 123456,
+            "repository_name": "repo",
+            "asset_id": "optional_asset_id"
+        }' \
+        "https://DEDGE_HOST_URL/integrations/scan-processes"
+   ```
+
+### GitLab Manual Implementation
+
+1. **Prepare the Payload:**
+   Similar to GitHub, collect all the necessary data. In GitLab CI/CD, these can be obtained from predefined environment variables.
+
+2. **Trigger the Scan:**
+   Use `curl` or another HTTP client to send the POST request.
+
+   ```bash
+   curl -X POST -H "Content-Type: application/json" -H "X-API-Key: YOUR_DEDGE_API_TOKEN" \
+        -d '{
+            "branch": "main",
+            "commit": "commit_sha",
+            "scm_provider": "gitlab",
+            "clone_url": "https://gitlab.com/user/repo.git",
+            "url": "https://gitlab.com/user/repo",
+            "scm_repository_id": 123456,
+            "repository_name": "repo",
+            "asset_id": "optional_asset_id"
+        }' \
+        "https://DEDGE_HOST_URL/integrations/scan-processes"
+   ```
+
+By following these steps, you can manually trigger and manage security scans for your repositories in GitHub and GitLab.
