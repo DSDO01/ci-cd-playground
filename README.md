@@ -9,9 +9,14 @@ This repository contains actions for both GitHub and GitLab, designed to facilit
    - [Workflow Example](#workflow-example)
 3. [GitLab Action](#gitlab-action)
    - [Pipeline Example](#pipeline-example)
-5. [Setting Up GitLab Token](#setting-up-gitlab-token)
-4. [Shared Code](#shared-code)
-
+4. [Setting Up GitLab Token](#setting-up-gitlab-token)
+5. [Shared Code](#shared-code)
+6. [Manual Implementation Instructions](#manual-implementation-instructions)
+   - [Endpoint and Host](#endpoint-and-host)
+   - [Required Data](#required-data)
+   - [Obtaining Values for Payload](#obtaining-values-for-payload)
+   - [GitHub Manual Implementation](#github-manual-implementation)
+   - [GitLab Manual Implementation](#gitlab-manual-implementation)
 
 ## GitHub Action
 
@@ -107,7 +112,7 @@ Completing these steps ensures that the pipeline can comment on merge requests.
 
 The `actions/common/` directory contains common utilities and classes, including the `SecurityScan` class. This class is integral to both GitHub and GitLab actions for managing the security scanning process.
 
-## Manual Implementation Instructions
+# Manual Implementation Instructions
 
 If you prefer to manually implement the security scanning process without using the provided GitHub or GitLab actions, you can directly interact with the security scan API. Below are the steps and details for both GitHub and GitLab SCM platforms.
 
