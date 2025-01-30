@@ -36,7 +36,7 @@ class SecurityScan {
                 if (status === 'finished') {
                     return { result, reportLink };
                 }
-
+                console.log(`Scan status: ${status}`);
                 await new Promise(resolve => setTimeout(resolve, 20000)); // Sleep for 20 seconds
             }
         } catch (error) {
