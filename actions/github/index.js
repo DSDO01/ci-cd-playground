@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const SecurityScan = require('../common/index.js'); // Import the SecurityScan class
+const SecurityScan = require('../common/index.js');
 const Helper = require('../common/helper.js');
 
 async function run() {
@@ -10,10 +10,18 @@ async function run() {
         const githubToken = core.getInput('GITHUB_TOKEN', { required: true });
         const assetId = core.getInput('ASSET_ID');
 
-        const scan = new SecurityScan(apiToken, dedgeHostUrl); // Create an instance of SecurityScan
+        const scan = new SecurityScan(apiToken, dedgeHostUrl);
 
-        const branch = process.env.GITHUB_REF.replace('refs/heads/', '');
-        const commit = process.env.GITHUB_SHA;
+        const branch =
+            process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF.replace('refs/heads/', '')
+                .replace('refs/pull/', '').split('/')[1];
+
+        const commit = github.context.eventName === 'pull_request'
+            ? github.context.payload.pull_request.head.sha
+            : process.env.GITHUB_SHA;
+
+
+
         const provider = 'github';
         const cloneUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}.git`;
         const url = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
@@ -31,11 +39,10 @@ async function run() {
             asset_id: assetId
         };
 
-
         let scanId;
 
         try {
-             scanId = await scan.triggerScan(scanPayload); // Use the SecurityScan instance
+            scanId = await scan.triggerScan(scanPayload);
             core.exportVariable('SCAN_ID', scanId);
             console.log(`Scan ID: ${scanId}`);
         } catch (error) {
@@ -49,7 +56,7 @@ async function run() {
         }
 
         try {
-            const { result, reportLink } = await scan.pollScanResults(scanId); // Use the SecurityScan instance
+            const { result, reportLink } = await scan.pollScanResults(scanId);
             core.setOutput('scan_status', result);
             core.setOutput('report_link', reportLink);
 

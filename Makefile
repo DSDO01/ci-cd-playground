@@ -7,6 +7,9 @@ build: install-dependencies github gitlab
 install-dependencies:
 	cd actions/common && npm install
 
+installnpm:
+	cd actions/common && npm install
+
 github:
 	@echo "Building GitHub action..."
 	cd actions/github && npm install && npm run build
