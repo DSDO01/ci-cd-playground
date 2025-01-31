@@ -38,6 +38,7 @@ async function run() {
             asset_id: assetId
         };
 
+        console.log('Scan payload:', scanPayload);
 
         let scanId;
 
