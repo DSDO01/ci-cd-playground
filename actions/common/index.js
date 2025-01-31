@@ -8,7 +8,7 @@ class SecurityScan {
 
     async triggerScan(scanPayload) {
         try {
-            const response = await axios.post(`${this.dedgeHostUrl}/integrations/scan-process`, scanPayload, {
+            const response = await axios.post(`${this.dedgeHostUrl}/integrations/scan-processes`, scanPayload, {
                 headers: {
                     'X-API-Key': this.apiToken,
                     'Content-Type': 'application/json'
@@ -23,7 +23,7 @@ class SecurityScan {
     async pollScanResults(scanId) {
         try {
             while (true) {
-                const response = await axios.get(`${this.dedgeHostUrl}/integrations/scan-process/${scanId}`, {
+                const response = await axios.get(`${this.dedgeHostUrl}/integrations/scan-processes/${scanId}`, {
                     headers: {
                         'X-API-Key': this.apiToken
                     }
@@ -36,7 +36,7 @@ class SecurityScan {
                 if (status === 'finished') {
                     return { result, reportLink };
                 }
-
+                console.log(`Scan status: ${status}`);
                 await new Promise(resolve => setTimeout(resolve, 20000)); // Sleep for 20 seconds
             }
         } catch (error) {
