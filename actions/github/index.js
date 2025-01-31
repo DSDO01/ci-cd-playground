@@ -12,8 +12,15 @@ async function run() {
 
         const scan = new SecurityScan(apiToken, dedgeHostUrl); // Create an instance of SecurityScan
 
-        const branch = process.env.GITHUB_REF.replace('refs/heads/', '');
-        const commit = process.env.GITHUB_SHA;
+
+        const branch =
+            process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF.replace('refs/heads/', '')
+                .replace('refs/pull/', '').split('/')[1];
+
+        const commit = github.context.eventName === 'pull_request'
+            ? github.context.payload.pull_request.head.sha
+            : process.env.GITHUB_SHA;
+
         const provider = 'github';
         const cloneUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}.git`;
         const url = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
@@ -35,7 +42,7 @@ async function run() {
         let scanId;
 
         try {
-             scanId = await scan.triggerScan(scanPayload); // Use the SecurityScan instance
+            scanId = await scan.triggerScan(scanPayload); // Use the SecurityScan instance
             core.exportVariable('SCAN_ID', scanId);
             console.log(`Scan ID: ${scanId}`);
         } catch (error) {
