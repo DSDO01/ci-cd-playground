@@ -37558,6 +37558,7 @@ function run() {
         core.exportVariable("SCAN_ID", scanId);
         console.log(`Scan ID: ${scanId}`);
       } catch (error) {
+        console.log("Error:", error);
         console.error(`Failed to trigger scan: ${error.message}`);
         process.exit(1);
       }
