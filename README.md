@@ -139,8 +139,8 @@ The data required to trigger a scan includes:
 ### Obtaining Values for Payload
 
 #### GitHub:
-- **branch**: Available as `process.env.GITHUB_REF_NAME` in GitHub Actions.
-- **commit**: Available as `process.env.GITHUB_SHA` in GitHub Actions.
+- **branch**: Available as `process.env.GITHUB_HEAD_REF` or derived from `process.env.GITHUB_REF` by removing 'refs/heads/' or 'refs/pull/' and taking the second segment if it's a pull request.
+- **commit**: Available as `github.context.payload.pull_request.head.sha` if the event is a pull request, otherwise `process.env.GITHUB_SHA`.
 - **scm_provider**: Set this to 'github'.
 - **clone_url**: Constructed as `https://github.com/${process.env.GITHUB_REPOSITORY}.git`.
 - **url**: Constructed as `https://github.com/${process.env.GITHUB_REPOSITORY}`.
