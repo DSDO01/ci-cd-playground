@@ -37532,8 +37532,8 @@ function run() {
       const githubToken = core.getInput("GITHUB_TOKEN", { required: true });
       const assetId = core.getInput("ASSET_ID");
       const scan = new SecurityScan(apiToken, dedgeHostUrl);
-      const branch = process.env.GITHUB_REF.replace("refs/heads/", "");
-      const commit = process.env.GITHUB_SHA;
+      const branch = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF.replace("refs/heads/", "").replace("refs/pull/", "").split("/")[1];
+      const commit = github.context.eventName === "pull_request" ? github.context.payload.pull_request.head.sha : process.env.GITHUB_SHA;
       const provider = "github";
       const cloneUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}.git`;
       const url = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}`;
