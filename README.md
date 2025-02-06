@@ -30,7 +30,7 @@ Here is an example of how the GitHub Action is configured in the workflow:
 name: "Execute CI/CD Scan"
 on:
   pull_request:
-    types: [opened, synchronize, closed]
+    types: [opened, synchronize]
   push:
     branches:
       - main
@@ -51,10 +51,10 @@ jobs:
       - name: Run GitHub Action
         uses: DSDO01/ci-cd-playground/actions/github@main
         with:
-          API_TOKEN: ${{ secrets.DEDGE_API_TOKEN }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
           DEDGE_HOST_URL: ${{ vars.DEDGE_HOST_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ASSET_ID: ${{ vars.ASSET_ID }} # Optional, for triggering a scan on a specific asset.
+          ASSET_ID: ${{ vars.ASSET_ID }} # This field needs to be passed if you want scan results to be added in issues collection, otherwise it is optional incase you want to run ephemeral scan
 ```
 
 ## GitLab Action
@@ -76,10 +76,10 @@ scan_job:
     - curl -LJO https://raw.githubusercontent.com/DSDO01/ci-cd-playground/refs/heads/main/actions/gitlab/dist/index.cjs
     - node index.cjs
   variables:
-    API_TOKEN: $DEDGE_API_TOKEN
+    API_TOKEN: $API_TOKEN
     DEDGE_HOST_URL: $DEDGE_HOST_URL
     GITLAB_TOKEN: $GITLAB_TOKEN_COMMENT # Required for commenting on merge requests.
-    ASSET_ID: $DEDGE_ASSET_ID # Optional, for triggering a scan on a specific asset.
+    ASSET_ID: $DEDGE_ASSET_ID # This field needs to be passed if you want scan results to be added in issues collection, otherwise it is optional incase you want to run ephemeral scan
   only:
     - merge_requests
     - main
