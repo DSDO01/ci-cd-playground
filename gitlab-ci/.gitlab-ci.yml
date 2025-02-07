@@ -8,7 +8,7 @@ scan_job:
     - curl -LJO https://raw.githubusercontent.com/DSDO01/ci-cd-playground/refs/heads/main/actions/gitlab/dist/index.cjs
     - node index.cjs
   variables:
-    API_TOKEN: $API_TOKEN
+    API_TOKEN: $DEDGE_API_TOKEN
     DEDGE_HOST_URL: $DEDGE_HOST_URL
     GITLAB_TOKEN: $GITLAB_TOKEN_COMMENT ## You must provide it, if you would like to comment on the pull-request.
     ASSET_ID: $DEDGE_ASSET_ID # This field needs to be passed if you want scan results to be added in issues collection, otherwise it is optional incase you want to run ephemeral scan

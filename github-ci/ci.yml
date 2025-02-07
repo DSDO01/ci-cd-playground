@@ -25,7 +25,7 @@ jobs:
         id: scan
         uses: DSDO01/ci-cd-playground/actions/github@main
         with:
-          API_TOKEN: ${{ secrets.API_TOKEN }}
+          API_TOKEN: ${{ secrets.DEDGE_API_TOKEN }}
           DEDGE_HOST_URL: ${{ vars.DEDGE_HOST_URL }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ASSET_ID: ${{ vars.ASSET_ID }} # This field needs to be passed if you want scan results to be added in issues collection, otherwise it is optional incase you want to run ephemeral scan
